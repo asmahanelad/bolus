@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bolus">
+<meta name="theme-color" content="#0F5E7A">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💉</text></svg>">
+<title>Bolus — insulinothérapie fonctionnelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF6FF; --surface:#FFFFFF; --ink:#1B2B4B; --muted:#5A6B86; --line:#D5E3F5;
+  --accent:#2F6FEB; --accent-ink:#FFFFFF; --accent-soft:#E2ECFF;
+  --sun:#FFC43D; --sun-soft:#FFF4D6; --mint:#16B8A6; --mint-soft:#DDF6F2; --coral:#FF6B6B; --coral-soft:#FFE5E3; --grape:#8B5CF6; --grape-soft:#EEE7FF;
+  --meal:#FFC43D; --corr:#7CF2E3;
+  --ok:#128A5A; --warn:#9A5B00; --warn-soft:#FFF1D6; --danger:#C62828; --danger-soft:#FFE3E0;
+  --hero-1:#2F6FEB; --hero-2:#7B5CF0; --on-hero:#FFFFFF;
+  --radius-lg:24px; --radius:14px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1628; --surface:#18233A; --ink:#EAF1FF; --muted:#A3B2CC; --line:#2B3A57;
+    --accent:#6EA0FF; --accent-ink:#0B1733; --accent-soft:#1F3160;
+    --sun-soft:#3A3014; --mint-soft:#12383A; --coral-soft:#3F1F24; --grape-soft:#2C2250;
+    --ok:#5FD39A; --warn:#FFC266; --warn-soft:#3A2C12; --danger:#FF8A80; --danger-soft:#3F1D1D;
+    --hero-1:#2A5BD0; --hero-2:#6445D8;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1628; --surface:#18233A; --ink:#EAF1FF; --muted:#A3B2CC; --line:#2B3A57;
+  --accent:#6EA0FF; --accent-ink:#0B1733; --accent-soft:#1F3160;
+  --sun-soft:#3A3014; --mint-soft:#12383A; --coral-soft:#3F1F24; --grape-soft:#2C2250;
+  --ok:#5FD39A; --warn:#FFC266; --warn-soft:#3A2C12; --danger:#FF8A80; --danger-soft:#3F1D1D;
+  --hero-1:#2A5BD0; --hero-2:#6445D8;
+}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Nunito","Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 12% 0%, color-mix(in srgb,var(--sun) 22%,transparent) 0 120px, transparent 121px),
+                   radial-gradient(circle at 100% 18%, color-mix(in srgb,var(--mint) 16%,transparent) 0 90px, transparent 91px);
+  background-repeat:no-repeat}
+.num{font-variant-numeric:tabular-nums}
+main{max-width:560px;margin:0 auto;padding:16px 16px calc(110px + env(safe-area-inset-bottom,0px))}
+.hero{display:flex;align-items:center;gap:14px;margin:4px 0 18px}
+.hero svg{flex:none;width:76px;height:76px}
+.hero .bubble{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:10px 14px;position:relative}
+.hero .bubble::before{content:"";position:absolute;left:-9px;top:22px;width:14px;height:14px;background:var(--surface);border-left:2px solid var(--line);border-bottom:2px solid var(--line);transform:rotate(45deg)}
+.hero h1{margin:0;font-size:1.45rem}
+.hero p{margin:0;color:var(--muted);font-size:.95rem;line-height:1.35}
+h1{font-size:1.5rem;line-height:1.2;margin:4px 0 4px;font-weight:800}
+h2{font-size:1.15rem;margin:0 0 12px;font-weight:800}
+p{margin:0 0 10px}
+.lead{color:var(--muted);margin-bottom:20px}
+.block{background:var(--surface);border:2px solid var(--line);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;box-shadow:0 4px 0 var(--line)}
+.step{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.step h2{margin:0}
+.step .n{flex:none;width:34px;height:34px;border-radius:50%;background:var(--sun);color:#3B2A00;font-weight:800;font-size:1rem;display:grid;place-items:center}
+.step .n2{background:var(--mint);color:#04332E}
+.step .n3{background:var(--coral);color:#3F0B0B}
+label{display:block;font-weight:700;font-size:.95rem;margin-bottom:6px}
+.hint{color:var(--muted);font-size:.88rem;margin-top:6px}
+input[type=text],input[type=number],input[type=password],select,textarea{
+  width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);
+  border-radius:var(--radius);padding:11px 12px;min-height:48px}
+textarea{min-height:64px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,.chip input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.field-unit{position:relative}
+.field-unit input{padding-inline-end:78px}
+.field-unit .u{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}
+.gly input{font-size:1.8rem;font-weight:800;min-height:64px;text-align:center;padding-inline-end:60px}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip > span{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px;border-radius:18px;border:2px solid var(--line);cursor:pointer;font-weight:700;background:var(--bg);text-align:center;transition:transform .12s}
+.chip > span .ic{font-size:2rem;line-height:1.1}
+.chip input:checked+span{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);box-shadow:0 3px 0 var(--accent);transform:translateY(-2px)}
+button{font:inherit;font-weight:700;cursor:pointer;border-radius:var(--radius);min-height:50px;padding:10px 16px;border:2px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:0 3px 0 var(--line)}
+button:active{transform:translateY(2px);box-shadow:none}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+button.ghost{background:transparent;border-color:transparent;color:var(--accent);padding:8px 10px;min-height:40px;box-shadow:none}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+#btn-camera{background:var(--coral);border-color:var(--coral);color:#fff;box-shadow:0 3px 0 #C94848;font-size:1.05rem}
+.photo-wrap{margin-top:14px;display:none}
+.photo-wrap img{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:18px;border:3px solid var(--sun)}
+.desc-wrap{margin-top:16px}
+.status{font-size:.95rem;margin-top:10px;color:var(--muted)}
+.status.err{color:var(--danger)}
+.items{margin-top:14px}
+.item{display:grid;grid-template-columns:1fr 1fr 40px;gap:8px;align-items:center;padding:10px 0;border-bottom:2px dashed var(--line)}
+.item:last-of-type{border-bottom:none}
+.item .meta{font-size:.82rem;color:var(--muted)}
+.item>.name{grid-column:1/-1}
+.item input{min-height:44px;padding:8px 10px}
+.item .del{min-height:40px;padding:0;border:none;background:transparent;color:var(--muted);font-size:1.4rem;box-shadow:none}
+.total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:12px 16px;border-radius:18px;background:var(--sun-soft);font-weight:800}
+.total .v{font-size:1.5rem}
+.conf{display:inline-block;font-size:.82rem;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-inline-start:6px}
+.conf.faible{background:var(--warn-soft);color:var(--warn)}
+.note{border-radius:var(--radius);padding:12px 14px;font-size:.95rem;margin-top:12px}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.note.danger{background:var(--danger-soft);color:var(--danger)}
+.note.info{background:var(--accent-soft);color:var(--ink)}
+.note strong{display:block;margin-bottom:2px}
+
+/* Résultat */
+.result{background:linear-gradient(135deg,var(--hero-1),var(--hero-2));color:var(--on-hero);border:none;box-shadow:0 6px 0 color-mix(in srgb,var(--hero-2) 55%,#000);position:relative;overflow:hidden}
+.result::after{content:"";position:absolute;right:-40px;top:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12)}
+.result .muted{color:rgba(255,255,255,.85);font-weight:700}
+.dose{display:flex;align-items:baseline;gap:10px;margin:6px 0 4px}
+.dose .v{font-size:clamp(4rem,20vw,6.5rem);font-weight:800;line-height:1;letter-spacing:-.02em}
+.dose .u{font-size:1.6rem;font-weight:800}
+.gauge{display:flex;height:16px;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.2);margin:16px 0 10px}
+.gauge i{display:block;height:100%}
+.gauge .g-meal{background:var(--meal)}
+.gauge .g-corr{background:var(--corr)}
+.breakdown{width:100%;border-collapse:collapse;font-size:.95rem}
+.breakdown td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.2)}
+.breakdown td:last-child{text-align:end;font-weight:800;white-space:nowrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:4px;margin-inline-end:8px}
+.result .note.warn{background:rgba(255,196,61,.28);color:#fff}
+.result .note.danger{background:rgba(255,80,80,.35);color:#fff}
+.result .pending{font-size:1.05rem;padding:10px 0;font-weight:700}
+.confirm{margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.25)}
+.confirm label.check{display:flex;gap:10px;font-weight:700;align-items:flex-start;cursor:pointer}
+.confirm input[type=checkbox]{width:24px;height:24px;flex:none;margin-top:1px;accent-color:var(--sun)}
+.confirm input[type=text]{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.45)}
+.confirm .u{color:rgba(255,255,255,.85)}
+.result button.primary{background:var(--sun);color:#3B2A00;border-color:var(--sun);box-shadow:0 3px 0 #C99416;width:100%;margin-top:12px;font-size:1.05rem}
+.bravo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.1rem;padding:6px 0 10px}
+.bravo svg{width:56px;height:56px;flex:none}
+@media (prefers-reduced-motion:no-preference){
+  .bravo svg{animation:hop .6s ease 2}
+  @keyframes hop{50%{transform:translateY(-8px) rotate(-6deg)}}
+}
+
+/* Journal */
+.entry{padding:12px 0;border-bottom:2px dashed var(--line);display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:start}
+.entry:last-child{border-bottom:none}
+.entry .ic{font-size:1.8rem;line-height:1;margin-top:2px}
+.entry .when{font-size:.85rem;color:var(--muted)}
+.entry .d{font-size:1.5rem;font-weight:800;text-align:end;line-height:1.1;color:var(--accent)}
+.entry .d small{font-size:.8rem;font-weight:400;color:var(--muted);display:block}
+.entry .foods{grid-column:2/-1;font-size:.88rem;color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:24px 8px}
+.empty .big{font-size:3rem;display:block;margin-bottom:6px}
+
+/* Réglages */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:420px){.grid2{grid-template-columns:1fr}}
+.ratio-row{display:grid;grid-template-columns:1fr 150px;gap:12px;align-items:center;padding:8px 0;border-bottom:2px dashed var(--line)}
+.ratio-row:last-child{border-bottom:none}
+.ratio-row label{margin:0;font-weight:700}
+.switch{display:flex;gap:12px;align-items:flex-start;font-weight:400;cursor:pointer}
+.switch input{width:22px;height:22px;flex:none;margin-top:2px;accent-color:var(--accent)}
+.saved{color:var(--ok);font-weight:800;margin-inline-start:8px}
+html[lang="ar"] body{font-family:"Cairo","Nunito",system-ui,sans-serif}
+html[dir="rtl"] .hero .bubble::before{left:auto;right:-9px;transform:rotate(225deg)}
+html[dir="rtl"] #s-fsi{padding-inline-end:132px}
+.lang{display:flex;justify-content:flex-end;gap:8px;margin:0 0 10px}
+.lang button{min-height:40px;padding:4px 14px;border-radius:999px;font-size:.95rem;box-shadow:none}
+.lang button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* Navigation : onglets bien visibles */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:2px solid var(--line);
+  box-shadow:0 -6px 18px rgba(20,40,90,.10);display:flex;justify-content:center;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));z-index:10}
+nav.tabs .in{display:flex;gap:8px;max-width:560px;width:100%}
+nav.tabs button{flex:1;border-radius:18px;min-height:66px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:.95rem;font-weight:800;background:var(--bg);color:var(--ink);border:2px solid var(--line);box-shadow:none}
+nav.tabs button .ic{font-size:1.7rem;line-height:1}
+nav.tabs button[data-tab="repas"][aria-selected="true"]{background:var(--coral);border-color:var(--coral);color:#fff}
+nav.tabs button[data-tab="journal"][aria-selected="true"]{background:var(--mint);border-color:var(--mint);color:#fff}
+nav.tabs button[data-tab="reglages"][aria-selected="true"]{background:var(--grape);border-color:var(--grape);color:#fff}
+nav.tabs button[aria-selected="true"]{box-shadow:0 3px 0 rgba(0,0,0,.18);transform:translateY(-2px)}
+section[hidden]{display:none}
+.disclaimer{font-size:.85rem;color:var(--muted);margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<div class="lang" id="lang-switch" role="group" aria-label="Langue / اللغة">
+  <button type="button" data-lang="fr" aria-pressed="true">🇫🇷 Français</button>
+  <button type="button" data-lang="ar" aria-pressed="false">🇩🇿 الدارجة</button>
+</div>
+
+<!-- ============ REPAS ============ -->
+<section id="tab-repas">
+  <div class="hero"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="gm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FB5FF"/><stop offset="1" stop-color="#2F6FEB"/></linearGradient></defs><path d="M50 6 C63 26 82 42 82 62 A32 32 0 0 1 18 62 C18 42 37 26 50 6Z" fill="url(#gm)"/><ellipse cx="38" cy="40" rx="6" ry="9" fill="#fff" opacity=".35"/><circle cx="40" cy="60" r="5.5" fill="#1B2B4B"/><circle cx="60" cy="60" r="5.5" fill="#1B2B4B"/><circle cx="41.8" cy="58" r="1.8" fill="#fff"/><circle cx="61.8" cy="58" r="1.8" fill="#fff"/><circle cx="31" cy="70" r="5" fill="#FF8FA3" opacity=".7"/><circle cx="69" cy="70" r="5" fill="#FF8FA3" opacity=".7"/><path d="M42 72 Q50 80 58 72" stroke="#1B2B4B" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M84 20 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#FFC43D"/></svg><div class="bubble"><h1>Calculer mon bolus</h1><p>Photo de l'assiette, glycémie, et c'est parti !</p></div></div>
+
+  <div id="setup-needed" class="note warn" hidden>
+    <strong>Réglages à compléter</strong>
+    Renseignez votre objectif glycémique, votre index de sensibilité et le ratio de ce repas avant le premier calcul.
+    <div style="margin-top:8px"><button class="primary" data-go="reglages">Ouvrir les réglages</button></div>
+  </div>
+
+  <div class="block">
+    <div class="step"><span class="n">1</span><h2>Quel repas ?</h2></div>
+    <div class="chips" id="meal-chips"></div>
+  </div>
+
+  <div class="block">
+    <div class="step"><span class="n n2">2</span><h2>Glycémie actuelle 🩸</h2></div>
+    <div class="field-unit gly">
+      <input id="gly" type="text" inputmode="decimal" autocomplete="off" aria-label="Glycémie actuelle" placeholder="—">
+      <span class="u" id="gly-unit">mg/dL</span>
+    </div>
+    <div id="gly-hint" class="hint"></div>
+  </div>
+
+  <div class="block">
+    <div class="step"><span class="n n3">3</span><h2>Glucides de l'assiette 🍽️</h2></div>
+    <div class="row" id="photo-buttons">
+      <button class="primary" id="btn-camera" type="button">📸 Prendre une photo</button>
+      <button id="btn-gallery" type="button">🖼️ Choisir une image</button>
+    </div>
+    <input id="file-camera" type="file" accept="image/*" capture="environment" hidden>
+    <input id="file-gallery" type="file" accept="image/*" hidden>
+
+    <div class="photo-wrap" id="photo-wrap">
+      <img id="photo" alt="Photo du repas">
+      <label for="photo-note" style="margin-top:12px">Précisions (facultatif)</label>
+      <textarea id="photo-note" placeholder="Ex. : 2 tranches de khobz, riz sous la sauce, jus d'orange 20 cl"></textarea>
+      <button class="primary" id="btn-analyse" type="button" style="width:100%;margin-top:10px">Estimer les glucides</button>
+    </div>
+        <div id="no-photo" class="note info" hidden><strong>Photo indisponible dans cet affichage</strong>Décrivez votre repas ci-dessous : l'IA estimera les glucides à partir de votre description.</div>
+    <div class="desc-wrap" id="desc-wrap">
+      <label for="desc" id="desc-label">Ou décrivez votre repas</label>
+      <textarea id="desc" placeholder="Ex. : une assiette de couscous au poulet et légumes, 1 morceau de khobz, 1 orange, 1 verre de jus"></textarea>
+      <button id="btn-desc" type="button" style="width:100%;margin-top:10px">Estimer depuis la description</button>
+    </div>
+    <div class="status" id="ai-status" role="status" aria-live="polite"></div>
+
+    <div class="items" id="items"></div>
+    <button class="ghost" id="btn-add-item" type="button">+ Ajouter un aliment</button>
+    <div class="total"><span>Total glucides</span><span class="v num"><span id="carb-total">0</span> g</span></div>
+    <div id="ai-remarks"></div>
+  </div>
+
+  <div class="block result" id="result" aria-live="polite">
+    <div class="muted">Dose proposée</div>
+    <div id="result-body"></div>
+  </div>
+
+  <p class="disclaimer">Outil d'aide au calcul. L'estimation par photo peut se tromper : vérifiez toujours les glucides, et suivez les consignes de votre équipe soignante.</p>
+</section>
+
+<!-- ============ JOURNAL ============ -->
+<section id="tab-journal" hidden>
+  <h1>📒 Journal</h1>
+  <p class="lead">Tous tes bolus enregistrés, du plus récent au plus ancien.</p>
+  <div class="block">
+    <div class="row" style="margin-bottom:6px">
+      <button id="btn-export" type="button" hidden>Exporter en CSV</button>
+    </div>
+    <div id="journal-list"></div>
+  </div>
+</section>
+
+<!-- ============ RÉGLAGES ============ -->
+<section id="tab-reglages" hidden>
+  <h1>⚙️ Réglages</h1>
+  <p class="lead">Les valeurs fixées avec votre diabétologue. Elles servent à chaque calcul.</p>
+
+  <form id="settings-form" novalidate>
+  <input type="radio" name="unit" value="gl" checked hidden>
+  <div class="block">
+    <h2>Glycémie</h2>
+    <div class="grid2">
+      <div>
+        <label for="s-cible">Objectif glycémique</label>
+        <div class="field-unit"><input id="s-cible" type="text" inputmode="decimal"><span class="u" data-unit></span></div>
+      </div>
+      <div>
+        <label for="s-fsi">Index de sensibilité</label>
+        <div class="field-unit"><input id="s-fsi" type="text" inputmode="decimal"><span class="u" data-unit-per-u></span></div>
+      </div>
+      <div>
+        <label for="s-hypo">Seuil d'hypoglycémie</label>
+        <div class="field-unit"><input id="s-hypo" type="text" inputmode="decimal"><span class="u" data-unit></span></div>
+      </div>
+      <div>
+        <label for="s-hyper">Seuil d'alerte cétones</label>
+        <div class="field-unit"><input id="s-hyper" type="text" inputmode="decimal"><span class="u" data-unit></span></div>
+      </div>
+    </div>
+    <p class="hint">L'index de sensibilité est la baisse de glycémie obtenue avec 1 UI d'insuline rapide.</p>
+    <label class="switch" style="margin-top:12px"><input type="checkbox" id="s-reduire"><span>Réduire la dose quand la glycémie est sous l'objectif</span></label>
+  </div>
+
+  <div class="block">
+    <h2>Ratios glucides / insuline</h2>
+    <p class="hint" style="margin:-4px 0 10px">Nombre de grammes de glucides couverts par 1 UI d'insuline rapide.</p>
+    <input type="radio" name="rfmt" value="gpu" checked hidden>
+    <div id="ratio-rows"></div>
+  </div>
+
+  <div class="block">
+    <h2>Reconnaissance des repas</h2>
+    <p class="hint">La reconnaissance photo fonctionne directement, sans clé ni réglage. Seuls la photo ou la description du repas sont envoyées pour l'estimation, jamais la glycémie ni les doses.</p>
+    <div class="row" style="margin-top:8px"><button type="button" id="btn-diag">Tester la reconnaissance d'une image</button></div>
+    <div class="status" id="diag-status" role="status" style="word-break:break-word"></div>
+  </div>
+
+  <div class="block">
+    <h2>Sécurité et arrondi</h2>
+    <div class="grid2">
+      <div>
+        <label for="s-arrondi">Arrondi de la dose</label>
+        <select id="s-arrondi">
+          <option value="0.5">à 0,5 UI inférieure</option>
+          <option value="1">à 1 UI inférieure</option>
+          <option value="0.1">à 0,1 UI inférieure (pompe)</option>
+        </select>
+      </div>
+      <div>
+        <label for="s-max">Dose maximale par bolus</label>
+        <div class="field-unit"><input id="s-max" type="text" inputmode="decimal"><span class="u">UI</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note danger" id="settings-err" hidden></div>
+  <button class="primary" type="submit" style="width:100%">Enregistrer les réglages</button>
+  <span class="saved" id="settings-saved" hidden>Réglages enregistrés</span>
+  </form>
+</section>
+</main>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="in" role="tablist">
+    <button role="tab" data-tab="repas" aria-selected="true"><span class="ic" aria-hidden="true">🍽️</span>Repas</button>
+    <button role="tab" data-tab="journal" aria-selected="false"><span class="ic" aria-hidden="true">📒</span>Journal</button>
+    <button role="tab" data-tab="reglages" aria-selected="false"><span class="ic" aria-hidden="true">⚙️</span>Réglages</button>
+  </div>
+</nav>
+
+<script>
+(function(){
+const MASCOT_SVG = '<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="gm2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FB5FF"/><stop offset="1" stop-color="#2F6FEB"/></linearGradient></defs><path d="M50 6 C63 26 82 42 82 62 A32 32 0 0 1 18 62 C18 42 37 26 50 6Z" fill="url(#gm2)"/><ellipse cx="38" cy="40" rx="6" ry="9" fill="#fff" opacity=".35"/><circle cx="40" cy="60" r="5.5" fill="#1B2B4B"/><circle cx="60" cy="60" r="5.5" fill="#1B2B4B"/><circle cx="41.8" cy="58" r="1.8" fill="#fff"/><circle cx="61.8" cy="58" r="1.8" fill="#fff"/><circle cx="31" cy="70" r="5" fill="#FF8FA3" opacity=".7"/><circle cx="69" cy="70" r="5" fill="#FF8FA3" opacity=".7"/><path d="M42 72 Q50 80 58 72" stroke="#1B2B4B" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M84 20 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#FFC43D"/></svg>';
+"use strict";
+
+
+/* ---------- Langues : français / arabe algérien ---------- */
+const AR = {"La reconnaissance photo fonctionne directement, sans clé ni réglage. Seuls la photo ou la description du repas sont envoyées pour l'estimation, jamais la glycémie ni les doses.": "التعرّف بالتصويرة يخدم ديريكت، بلا مفتاح ولا إعدادات. غير التصويرة ولا وصف الماكلة يتبعثو للتقدير، عمرهم السكر ولا الجرعات.", "Reconnaissance des repas": "التعرّف على الماكلة", "Le service de reconnaissance n'est pas installé sur ce site. En attendant, saisissez les glucides à la main et prévenez votre médecin.": "خدمة التعرّف ماراهاش مركّبة في هاد الموقع. في الأثناء، دخّل الغلوسيد بيدك وخبّر الطبيب تاعك.", "Le service de reconnaissance n'est pas encore configuré. En attendant, saisissez les glucides à la main et prévenez votre médecin.": "خدمة التعرّف مازال ما توجدتش. في الأثناء، دخّل الغلوسيد بيدك وخبّر الطبيب تاعك.", "Ouvrez l'application depuis son adresse habituelle.": "افتح التطبيق من العنوان العادي تاعو.", "La demande était incomplète. Réessayez.": "الطلب ماكانش كامل. عاود.", "Le service de reconnaissance est mal configuré. Saisissez les glucides à la main et prévenez votre médecin.": "خدمة التعرّف فيها مشكل. دخّل الغلوسيد بيدك وخبّر الطبيب تاعك.", "Le service est très demandé en ce moment. Réessayez dans une minute, ou saisissez les glucides à la main.": "الخدمة عليها بزاف الناس دركا. عاود من بعد دقيقة، ولا دخّل الغلوسيد بيدك.", "Le service de reconnaissance est momentanément indisponible. Saisissez les glucides à la main.": "خدمة التعرّف ماراهيش متوفرة دركا. دخّل الغلوسيد بيدك.", "Copier mon lien avec la clé": "انسخ الرابط تاعي بالمفتاح", "Si la clé disparaît, ouvrez votre lien personnel : la clé se réinstalle toute seule. Gardez ce lien pour vous, comme un mot de passe.": "إذا المفتاح راح، افتح الرابط الشخصي تاعك: المفتاح يرجع وحدو. خبّي هاد الرابط ليك برك، كيما كلمة السر.", "Lien copié. Enregistrez-le dans vos favoris ou une note privée.": "الرابط تنسخ. حطّو في المفضلة ولا في ملاحظة خاصة.", "Copiez ce lien et gardez-le dans une note privée :": "انسخ هاد الرابط وخبّيه في ملاحظة خاصة:", "Clé installée depuis votre lien personnel.": "المفتاح ترجّع من الرابط الشخصي تاعك.", "Calculer mon bolus": "نحسب البولوس تاعي", "Photo de l'assiette, glycémie, et c'est parti !": "تصويرة الطبسي، السكر، ويالله نبداو!", "Réglages à compléter": "لازم تكمّل الإعدادات", "Renseignez votre objectif glycémique, votre index de sensibilité et le ratio de ce repas avant le premier calcul.": "دخّل الهدف تاع السكر، مؤشر الحساسية والنسبة تاع هاد الماكلة قبل الحساب الأول.", "Ouvrir les réglages": "افتح الإعدادات", "Quel repas ?": "واش من ماكلة؟", "Glycémie actuelle 🩸": "السكر في الدم دركا 🩸", "Glycémie actuelle": "السكر في الدم دركا", "Glucides de l'assiette 🍽️": "الغلوسيد تاع الطبسي 🍽️", "📸 Prendre une photo": "📸 دير تصويرة", "🖼️ Choisir une image": "🖼️ اختار تصويرة", "Photo du repas": "تصويرة الماكلة", "Précisions (facultatif)": "تفاصيل زايدة (ماشي لازم)", "Ex. : 2 tranches de khobz, riz sous la sauce, jus d'orange 20 cl": "مثلا: 2 طراف خبز، رز تحت الصوص، عصير تشينة 20 سل", "Estimer les glucides": "قدّر الغلوسيد", "Reconnaissance photo à activer": "لازم تفعّل التعرّف على التصاور", "Ajoutez votre clé gratuite Google AI Studio dans les réglages.": "زيد المفتاح المجاني تاع Google AI Studio في الإعدادات.", "Ajouter la clé": "زيد المفتاح", "Photo indisponible dans cet affichage": "التصويرة ما تخدمش هنا", "Décrivez votre repas ci-dessous : l'IA estimera les glucides à partir de votre description.": "وصف الماكلة تاعك لتحت: الذكاء الاصطناعي يقدّر الغلوسيد من الوصف تاعك.", "Ou décrivez votre repas": "ولا وصف الماكلة تاعك", "Décrivez votre repas": "وصف الماكلة تاعك", "Ex. : une assiette de couscous au poulet et légumes, 1 morceau de khobz, 1 orange, 1 verre de jus": "مثلا: طبسي كسكسي بالدجاج والخضرة، طرف خبز، تشينة، كاس عصير", "Estimer depuis la description": "قدّر من الوصف", "+ Ajouter un aliment": "+ زيد ماكلة", "Total glucides": "مجموع الغلوسيد", "Dose proposée": "الجرعة المقترحة", "Outil d'aide au calcul. L'estimation par photo peut se tromper : vérifiez toujours les glucides, et suivez les consignes de votre équipe soignante.": "أداة تعاونك في الحساب. التقدير بالتصويرة يقدر يغلط: ديما راجع الغلوسيد، وتبّع النصايح تاع الفريق الطبي تاعك.", "📒 Journal": "📒 الدفتر", "Tous tes bolus enregistrés, du plus récent au plus ancien.": "كامل البولوس اللي سجلتهم، من الجديد للقديم.", "Exporter en CSV": "صدّر ملف CSV", "⚙️ Réglages": "⚙️ الإعدادات", "Les valeurs fixées avec votre diabétologue. Elles servent à chaque calcul.": "القيم اللي حددتها مع طبيب السكري. تتستعمل في كل حساب.", "Glycémie": "السكر في الدم", "Objectif glycémique": "الهدف تاع السكر", "Index de sensibilité": "مؤشر الحساسية", "Seuil d'hypoglycémie": "حد الهيبو (هبوط السكر)", "Seuil d'alerte cétones": "حد التنبيه للأسيتون", "L'index de sensibilité est la baisse de glycémie obtenue avec 1 UI d'insuline rapide.": "مؤشر الحساسية هو قداش يهبط السكر بـ 1 وحدة أنسولين سريع.", "Réduire la dose quand la glycémie est sous l'objectif": "نقّص الجرعة كي يكون السكر تحت الهدف", "Ratios glucides / insuline": "نسبة الغلوسيد / الأنسولين", "Nombre de grammes de glucides couverts par 1 UI d'insuline rapide.": "شحال من غرام غلوسيد تغطيهم 1 وحدة أنسولين سريع.", "Reconnaissance des repas (gratuite)": "التعرّف على الماكلة (بلاش)", "Clé API Google AI Studio": "مفتاح API تاع Google AI Studio", "Collez la clé ici": "لصق المفتاح هنا", "Clé gratuite, sans carte bancaire : aistudio.google.com, puis « Get API key ». Elle reste sur cet appareil. Seules la photo et la description du repas sont envoyées à Google, jamais la glycémie ni les doses. Sur le niveau gratuit, Google peut utiliser ces envois pour améliorer ses services.": "مفتاح بلاش، بلا بطاقة بنكية: aistudio.google.com، من بعد « Get API key ». يبقى غير في هاد الجهاز. غير التصويرة ووصف الماكلة يتبعثو لـ Google، عمرهم السكر ولا الجرعات. في المستوى المجاني، Google تقدر تستعمل هاد المعلومات باش تحسّن الخدمات تاعها.", "Modèle": "النموذج", "Tester la clé": "جرّب المفتاح", "Tester la reconnaissance d'une image": "جرّب التعرّف على تصويرة", "Sécurité et arrondi": "الأمان والتقريب", "Arrondi de la dose": "تقريب الجرعة", "à 0,5 UI inférieure": "لـ 0,5 وحدة اللي تحت", "à 1 UI inférieure": "لـ 1 وحدة اللي تحت", "à 0,1 UI inférieure (pompe)": "لـ 0,1 وحدة اللي تحت (المضخة)", "Dose maximale par bolus": "أكبر جرعة في البولوس", "UI": "وحدة", "/UI": " لكل وحدة", "Enregistrer les réglages": "سجّل الإعدادات", "Réglages enregistrés": "الإعدادات تسجلت", "Réglages gardés sur cet appareil uniquement": "الإعدادات تحفظت غير في هاد الجهاز", "Repas": "الماكلة", "Journal": "الدفتر", "Réglages": "الإعدادات", "Sections": "الأقسام", "Petit-déjeuner": "فطور الصباح", "Déjeuner": "الغدا", "Goûter": "القوتي", "Dîner": "العشا", "ex.": "مثلا", "Valeur hors des limites habituelles : vérifiez l'unité ({u}) et la saisie.": "القيمة ماشي عادية: راجع الوحدة ({u}) واللي كتبت.", "Préparation de l'image…": "نوجدو التصويرة…", "Photo prête. Ajoutez des précisions si besoin, puis lancez l'estimation.": "التصويرة واجدة. زيد تفاصيل إذا لازم، من بعد ابدا التقدير.", "Impossible de lire cette image sur cet appareil (format HEIC possible). Dans les réglages de l'appareil photo, choisissez le format « le plus compatible » (JPEG), ou faites une capture d'écran de la photo.": "ما قدرناش نقراو هاد التصويرة في هاد الجهاز (ممكن الفورما HEIC). في إعدادات الكاميرا اختار الفورما « الأكثر توافق » (JPEG)، ولا دير capture d'écran للتصويرة.", "Ajoutez votre clé gratuite Google AI Studio dans l'onglet Réglages pour activer la reconnaissance des repas.": "زيد المفتاح المجاني تاع Google AI Studio في الإعدادات باش يخدم التعرّف على الماكلة.", "La clé est refusée. Vérifiez qu'elle est copiée en entier dans l'onglet Réglages.": "المفتاح مرفوض. تأكد بلي نسختو كامل في الإعدادات.", "La clé n'a pas accès à l'API Gemini. Recréez-la sur aistudio.google.com.": "هاد المفتاح ما عندوش الحق في Gemini API. اعمل واحد جديد في aistudio.google.com.", "Quota gratuit du moment atteint. Patientez une minute (ou jusqu'au lendemain si le quota du jour est épuisé), puis réessayez.": "وصلت للحد المجاني تاع دركا. استنى دقيقة (ولا لغدوا إذا كمل الحد تاع النهار)، من بعد عاود.", "Le modèle indiqué dans les réglages n'existe pas ou n'est plus gratuit. Remettez « gemini-flash-latest ».": "النموذج اللي في الإعدادات ما كانش ولا ماراهوش بلاش. رجّع « gemini-flash-latest ».", "L'API Gemini gratuite n'est pas proposée dans votre pays depuis ce réseau.": "Gemini API المجاني ماراهوش متوفر في بلادك من هاد الشبكة.", "Pas de connexion Internet, ou la requête a été bloquée. Vérifiez le réseau et réessayez.": "ما كانش الأنترنت، ولا الطلب تبلوكا. راجع الشبكة وعاود.", "Estimation arrêtée.": "التقدير حبس.", "L'autorisation d'utiliser Claude a été refusée pour cette application. Rechargez la page et acceptez la demande qui s'affiche.": "الإذن تّرفض. عاود حمّل الصفحة واقبل الطلب.", "L'estimation est désactivée dans cet affichage. Ouvrez l'application dans un navigateur sur claude.ai.": "التقدير ماشي مفعّل هنا.", "Votre application Claude est trop ancienne. Mettez-la à jour ou ouvrez l'application dans un navigateur sur claude.ai.": "التطبيق قديم بزاف. حدّثو.", "Claude n'est pas disponible pour ce compte ou cette organisation.": "الخدمة ماشي متوفرة لهاد الحساب.", "L'estimation n'est pas activée pour cette application.": "التقدير ماشي مفعّل في هاد التطبيق.", "Votre session a expiré. Reconnectez-vous à claude.ai puis réessayez.": "الجلسة كملت. عاود ادخل.", "Cette image a été refusée (format ou taille). Reprenez la photo ou choisissez une autre image.": "التصويرة تّرفضت (الفورما ولا الحجم). عاود صوّر ولا اختار تصويرة أخرى.", "Limite d'utilisation atteinte pour le moment. Réessayez dans quelques minutes.": "وصلت للحد تاع الاستعمال. عاود من بعد شوية دقايق.", "L'estimation a été refusée. Reformulez la description ou reprenez la photo.": "التقدير تّرفض. بدّل الوصف ولا عاود صوّر.", "L'estimation n'a rien renvoyé. Relancez-la.": "التقدير ما رجّع والو. عاود.", "La réponse était illisible. Relancez l'estimation.": "الجواب ما تقراش. عاود التقدير.", "Problème de connexion avec le service. Relancez l'estimation.": "كاين مشكل في الاتصال بالخدمة. عاود التقدير.", "Décrivez d'abord votre repas (aliments et quantités si possible).": "وصف الماكلة تاعك قبل (واش كليت والكمية إذا تقدر).", "Connexion à l'estimation…": "نتصلو بالتقدير…", "Arrêter l'estimation": "حبّس التقدير", "Analyse de l'assiette en cours… (souvent 10 à 40 secondes)": "راهو يحلل الطبسي… (عادة من 10 حتى 40 ثانية)", "Estimation en cours… (souvent 5 à 20 secondes)": "راهو يقدّر… (عادة من 5 حتى 20 ثانية)", "Estimation en cours… réponse en réception.": "راهو يقدّر… الجواب راهو جاي.", "Estimation terminée. Vérifiez et corrigez chaque ligne si nécessaire.": "التقدير كمل. راجع وصحّح كل سطر إذا لازم.", "Aucun aliment reconnu.": "ما تعرّف على حتى ماكلة.", "La photo ne peut pas être envoyée depuis cet affichage. Décrivez votre repas ci-dessus : l'estimation fonctionnera à partir du texte.": "التصويرة ما تتبعثش من هنا. وصف الماكلة تاعك الفوق: التقدير يخدم بالكتابة.", "L'estimation n'a pas abouti. Relancez-la.": "التقدير ما نجحش. عاود.", "{msg} En attendant, saisissez les glucides à la main. (Code : {code})": "{msg} في الأثناء، دخّل الغلوسيد بيدك. (الكود: {code})", "Aliment": "ماكلة", "Poids en grammes de {n}": "الوزن بالغرام تاع {n}", "Glucides en grammes pour {n}": "الغلوسيد بالغرام تاع {n}", "Retirer {n}": "نحّي {n}", "poids": "الوزن", "glucides": "غلوسيد", "Estimation par photo": "تقدير بالتصويرة", "Estimation depuis la description": "تقدير من الوصف", "confiance {c}": "الثقة: {c}", "faible": "ضعيفة", "moyenne": "متوسطة", "élevée": "عالية", "Objectif : {v}": "الهدف: {v}", "Le calcul s'affichera quand vos réglages seront complets (ratio du {m} compris).": "الحساب يبان كي تكمّل الإعدادات (حتى النسبة تاع {m}).", "Saisissez votre glycémie pour obtenir la dose.": "دخّل السكر تاعك باش تشوف الجرعة.", "Hypoglycémie : pas de bolus maintenant": "هيبو: ما تديرش البولوس دركا", "Glycémie à {g}, sous votre seuil de {s}. Resucrez-vous selon le protocole de votre équipe (souvent 15 g de sucre rapide), recontrôlez 15 minutes plus tard, puis refaites le calcul avant de manger.": "السكر {g}، تحت الحد تاعك {s}. كول سكر سريع كيما قالك الفريق الطبي (عادة 15 غ سكر سريع)، عاود قيس بعد 15 دقيقة، من بعد عاود الحساب قبل ما تاكل.", "Dose plafonnée à {m} UI": "الجرعة تحبسات عند {m} وحدة", "Le calcul donne {d} UI, au-dessus de votre dose maximale. Vérifiez les glucides et la glycémie ; en cas de doute, contactez votre équipe soignante.": "الحساب عطى {d} وحدة، فوق أكبر جرعة تاعك. راجع الغلوسيد والسكر؛ إذا شكّيت، اتصل بالفريق الطبي تاعك.", "Glycémie élevée": "السكر طالع", "Recherchez les cétones (sang ou urines) selon les consignes de votre équipe.": "قيس الأسيتون (في الدم ولا البول) كيما قالك الفريق الطبي.", "Quantité de glucides inhabituelle": "كمية غلوسيد ماشي عادية", "{c} g : vérifiez les portions avant d'injecter.": "{c} غ: راجع الكميات قبل ما تضرب الإبرة.", "Certains aliments n'ont pas de valeur en glucides : ils ne sont pas comptés.": "كاين ماكلة ما عندهاش قيمة غلوسيد: ما تتحسبش.", "d'insuline rapide, calculée avant arrondi à {r} UI": "أنسولين سريع، قبل التقريب كانت {r} وحدة", "1 UI pour {g} g": "1 وحدة لكل {g} غ", "Repas : {c} g × {r}": "الماكلة: {c} غ × {r}", "Correction": "التصحيح", "J'ai vérifié les glucides et ma glycémie.": "راجعت الغلوسيد والسكر تاعي.", "Dose réellement injectée": "الجرعة اللي ضربتها بالصح", "Enregistrer dans le journal": "سجّل في الدفتر", "Indiquez la dose injectée (en unités).": "دخّل الجرعة اللي ضربت (بالوحدات).", "Bravo ! Ton bolus est noté dans le journal ⭐": "برافو! البولوس تاعك تسجل في الدفتر ⭐", "Bolus gardé sur cet appareil uniquement.": "البولوس تحفظ غير في هاد الجهاز.", "Pas encore de bolus enregistré. Le premier apparaîtra ici après un calcul.": "مازال ما سجلت حتى بولوس. الأول يبان هنا من بعد الحساب.", " (calculée {d})": " (المحسوبة {d})", "{g}, {c} g de glucides": "{g}، {c} غ غلوسيد", ", photo": "، تصويرة", ", description": "، وصف", "Supprimer": "امسح", "Supprimer ce bolus du journal ?": "تمسح هاد البولوس من الدفتر؟", "Envoi d'une image de test…": "نبعثو تصويرة تاع تجربة…", "Reconnaissance d'image opérationnelle ({m}) : « {t} »": "التعرّف على التصاور يخدم ({m}): « {t} »", "Échec : {e} Détail technique : {d}": "ما نجحش: {e} التفاصيل التقنية: {d}", "Saisissez d'abord la clé.": "دخّل المفتاح قبل.", "Test en cours…": "راهو يجرّب…", "Clé valide. La reconnaissance photo est active.": "المفتاح صحيح. التعرّف بالتصويرة راهو يخدم.", "Échec du test.": "التجربة ما نجحتش.", "L'objectif glycémique doit se situer entre {a} et {b}.": "الهدف تاع السكر لازم يكون بين {a} و {b}.", "L'index de sensibilité semble hors limites (entre {a} et {b} par unité).": "مؤشر الحساسية ماشي معقول (لازم بين {a} و {b} لكل وحدة).", "Le seuil d'hypoglycémie doit se situer entre {a} et {b}.": "حد الهيبو لازم يكون بين {a} و {b}.", "Le seuil d'alerte cétones doit se situer entre {a} et {b}.": "حد التنبيه للأسيتون لازم يكون بين {a} و {b}.", "L'objectif doit être supérieur au seuil d'hypoglycémie.": "الهدف لازم يكون فوق حد الهيبو.", "Ratio du repas « {m} » inhabituel : vérifiez la valeur et le format choisi.": "النسبة تاع « {m} » ماشي عادية: راجع القيمة.", "La dose maximale doit être comprise entre 0 et 60 UI.": "أكبر جرعة لازم تكون بين 0 و 60 وحدة.", "À corriger": "لازم تصحّح"};
+let LANG = (()=>{ try{ return localStorage.getItem("ift:lang")==="ar" ? "ar" : "fr"; }catch(e){ return "fr"; } })();
+function t(fr, p){
+  let s = (LANG==="ar" && AR[fr]!=null) ? AR[fr] : fr;
+  if (p) for (const k in p) s = s.split("{"+k+"}").join(p[k]);
+  return s;
+}
+const locale = () => LANG==="ar" ? "ar-DZ-u-nu-latn" : "fr-FR";
+const I18N_SKIP = "#meal-chips,#items,#ai-remarks,#result-body,#journal-list,#ratio-rows,.status,#settings-err,#gly-hint,#carb-total,#gly-unit,[data-unit],[data-unit-per-u],#desc-label,#btn-analyse,#btn-desc,#settings-saved,#lang-switch,script,style,svg";
+const i18nNodes = [], i18nAttrs = [];
+(function collectI18n(){
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {acceptNode(n){
+    if (!n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+    const el = n.parentElement; if (!el || el.closest(I18N_SKIP)) return NodeFilter.FILTER_REJECT;
+    return NodeFilter.FILTER_ACCEPT; }});
+  let n; while ((n = w.nextNode())) i18nNodes.push([n, n.nodeValue]);
+  document.querySelectorAll("[placeholder],[aria-label],[alt]").forEach(el=>{
+    if (el.closest(I18N_SKIP)) return;
+    ["placeholder","aria-label","alt"].forEach(a=>{ if (el.hasAttribute(a)) i18nAttrs.push([el, a, el.getAttribute(a)]); });
+  });
+})();
+function applyStatic(){
+  i18nNodes.forEach(([n,o])=>{ const k = o.trim(), tr = t(k); n.nodeValue = tr===k ? o : o.replace(k, tr); });
+  i18nAttrs.forEach(([el,a,o])=>el.setAttribute(a, t(o)));
+  document.documentElement.lang = LANG==="ar" ? "ar" : "fr";
+  document.documentElement.dir = LANG==="ar" ? "rtl" : "ltr";
+  document.querySelectorAll("#lang-switch button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.lang===LANG)));
+}
+
+/* ---------- Constantes ---------- */
+const MEALS = [
+  {id:"petit_dej", fr:"Petit-déjeuner", ic:"🥐", h:[5,11]},
+  {id:"dejeuner", fr:"Déjeuner", ic:"🍲", h:[11,15]},
+  {id:"gouter", fr:"Goûter", ic:"🍎", h:[15,18.5]},
+  {id:"diner", fr:"Dîner", ic:"🌙", h:[18.5,29]}
+];
+MEALS.forEach(m=>Object.defineProperty(m, "nom", {get(){ return t(m.fr); }}));
+const UNITS = {
+  mgdl:{lbl:"mg/dL", f:1, dec:0},
+  gl:{lbl:"g/L", f:100, dec:2},
+  mmol:{lbl:"mmol/L", f:18.016, dec:1}
+};
+const DEFAULTS = {
+  unit:"gl", cible:null, fsi:null, hypo:70, hyper:250, reduire:true,
+  rfmt:"u10", ratios:{}, arrondi:0.5, max:null
+};
+const MAX_JOURNAL = 300;
+
+/* ---------- Utilitaires ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const num = v => { if (v===null||v===undefined) return null; const n = parseFloat(String(v).replace(",",".").trim()); return Number.isFinite(n) ? n : null; };
+const fmt = (n, d=1) => n==null ? "—" : Number(n).toLocaleString("fr-FR",{minimumFractionDigits:d===0?0:0,maximumFractionDigits:d});
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+function lsGet(k){ try{ const v = localStorage.getItem("ift:"+k); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem("ift:"+k, JSON.stringify(v)); }catch(e){} }
+
+/* ---------- Stockage (base de l'artefact, repli local) ---------- */
+const Store = {
+  db:null, uid:null, queues:{},
+  async init(){
+    try{
+      if (!window.claude || !window.claude.use) return false;
+      const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+      if (db && user){ const id = await user.id(); if (id){ this.db = db; this.uid = id; return true; } }
+    }catch(e){}
+    return false;
+  },
+  ref(k){ return this.db.doc("data/users/"+this.uid+"/"+k); },
+  async load(k){
+    if (this.db){
+      try{ const s = await this.ref(k).get(); if (s.exists) return clone(s.data()); return null; }catch(e){}
+    }
+    return lsGet(k);
+  },
+  save(k, obj){
+    lsSet(k, obj);
+    if (!this.db) return Promise.resolve(true);
+    const prev = this.queues[k] || Promise.resolve();
+    const next = prev.then(()=>this.ref(k).set(clone(obj))).then(()=>true).catch(()=>false);
+    this.queues[k] = next;
+    return next;
+  }
+};
+
+/* ---------- État ---------- */
+let settings = Object.assign(clone(DEFAULTS), lsGet("settings")||{});
+let journal = (lsGet("journal")||{}).entries || [];
+const state = { meal: guessMeal(), items: [], photoBlob:null, analysing:false, ctl:null, confidence:null, remarks:"", source:"manuel" };
+
+function guessMeal(){
+  const d = new Date(); let h = d.getHours() + d.getMinutes()/60; if (h < 5) h += 24;
+  const m = MEALS.find(m => h >= m.h[0] && h < m.h[1]);
+  return m ? m.id : "dejeuner";
+}
+
+/* ---------- Conversions glycémie ---------- */
+const U = () => UNITS[settings.unit] || UNITS.gl;
+const toMg = v => v==null ? null : v * U().f;
+const fromMg = mg => mg==null ? null : +(mg / U().f).toFixed(U().dec);
+const fmtG = mg => mg==null ? "—" : fmt(fromMg(mg), U().dec) + " " + U().lbl;
+
+/* ---------- Réglages : complets ? ---------- */
+function settingsReady(mealId){
+  return settings.cible>0 && settings.fsi>0 && settings.ratios && settings.ratios[mealId]>0;
+}
+
+/* ---------- Onglets ---------- */
+function showTab(t){
+  $$("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.tab===t)));
+  ["repas","journal","reglages"].forEach(x=>{ $("#tab-"+x).hidden = x!==t; });
+  if (t==="journal") renderJournal();
+  if (t==="reglages") fillSettingsForm(settings);
+  window.scrollTo(0,0);
+}
+$$("nav.tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+document.addEventListener("click", e=>{ const g = e.target.closest("[data-go]"); if (g) showTab(g.dataset.go); });
+
+/* ---------- Choix du repas ---------- */
+function renderMealChips(){
+  $("#meal-chips").innerHTML = MEALS.map(m =>
+    `<label class="chip"><input type="radio" name="meal" value="${m.id}" ${m.id===state.meal?"checked":""}><span><span class="ic" aria-hidden="true">${m.ic}</span>${m.nom}</span></label>`
+  ).join("");
+  $$("#meal-chips input").forEach(i=>i.addEventListener("change",()=>{ state.meal = i.value; update(); }));
+}
+
+/* ---------- Glycémie ---------- */
+function readGly(){
+  const v = num($("#gly").value);
+  if (v==null) return {mg:null};
+  const mg = toMg(v);
+  let warn = null;
+  if (mg < 20 || mg > 600) warn = t("Valeur hors des limites habituelles : vérifiez l'unité ({u}) et la saisie.", {u:U().lbl});
+  return {mg, warn};
+}
+$("#gly").addEventListener("input", update);
+
+/* ---------- Photo ---------- */
+$("#btn-camera").addEventListener("click",()=>$("#file-camera").click());
+$("#btn-gallery").addEventListener("click",()=>$("#file-gallery").click());
+["#file-camera","#file-gallery"].forEach(sel=>$(sel).addEventListener("change", async e=>{
+  const f = e.target.files && e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  setStatus(t("Préparation de l'image…"));
+  try{
+    state.photoBlob = await downscale(f, 1280);
+    $("#photo").src = URL.createObjectURL(state.photoBlob);
+    $("#photo-wrap").style.display = "block";
+    setStatus(t("Photo prête. Ajoutez des précisions si besoin, puis lancez l'estimation."));
+  }catch(err){
+    setStatus(t("Impossible de lire cette image sur cet appareil (format HEIC possible). Dans les réglages de l'appareil photo, choisissez le format « le plus compatible » (JPEG), ou faites une capture d'écran de la photo."), true);
+  }
+}));
+
+function downscale(file, maxSide){
+  return new Promise((resolve,reject)=>{
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = ()=>{
+      const s = Math.min(1, maxSide/Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.naturalWidth*s); c.height = Math.round(img.naturalHeight*s);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b=> b ? resolve(b) : reject(new Error("blob")), "image/jpeg", 0.85);
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error("img")); };
+    img.src = url;
+  });
+}
+
+function setStatus(t, err){ const s = $("#ai-status"); s.textContent = t||""; s.classList.toggle("err", !!err); }
+
+let sampleFn = null;
+let samplePromise = null;
+/* La clé Gemini est gardée sur le serveur Netlify (fonction /api/estimer). */
+function getKey(){ return "serveur"; }
+function blobToB64(blob){
+  return new Promise((res,rej)=>{ const r = new FileReader(); r.onload = ()=>res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(blob); });
+}
+async function callServer(payload, signal){
+  let r;
+  try{
+    r = await fetch("/api/estimer", { method:"POST", signal, headers:{ "content-type":"application/json" }, body: JSON.stringify(payload) });
+  }catch(e){
+    if (e && e.name === "AbortError") throw {code:"cancelled", message:""};
+    throw {code:"network", message:String(e && e.message || e)};
+  }
+  if (r.status === 404) throw {code:"server_missing", message:"HTTP 404 /api/estimer"};
+  if (r.status === 429) throw {code:"rate_limited", message:"HTTP 429"};
+  const raw = await r.text();
+  let data;
+  try{ data = JSON.parse(raw.trim()); }catch(e){ throw {code:"upstream_error", message:"HTTP " + r.status + " : " + raw.trim().slice(0,120)}; }
+  if (!data.ok) throw {code:data.code || "upstream_error", message:data.message || ""};
+  return {text:data.text, model:data.model};
+}
+const callApi = null;
+function getSample(){
+  return Promise.resolve(callServer);
+  if (sampleFn) return Promise.resolve(sampleFn);
+  if (!samplePromise){
+    samplePromise = (window.claude && window.claude.use ? claude.use("sample") : Promise.resolve(null))
+      .then(f=>{ sampleFn = f || null; if (!f) samplePromise = null; return sampleFn; })
+      .catch(()=>{ samplePromise = null; return null; });
+  }
+  return samplePromise;
+}
+function noPhotoMode(){
+  $("#photo-buttons").hidden = true;
+  $("#photo-wrap").style.display = "none";
+  $("#no-photo").hidden = false;
+  state.noPhoto = true; $("#desc-label").textContent = t("Décrivez votre repas");
+  $("#btn-desc").classList.add("primary");
+  state.photoBlob = null;
+}
+function photoMode(){
+  $("#photo-buttons").hidden = false; $("#no-photo").hidden = true;
+  state.noPhoto = false; $("#desc-label").textContent = t("Ou décrivez votre repas"); $("#btn-desc").classList.remove("primary");
+}
+async function initAI(){
+  if (getKey()) { photoMode(); return; }
+  if (!window.claude) return;
+  const f = await getSample();
+  if (f && f.limits){
+    const lim = await f.limits().catch(()=>null);
+    if (lim && !lim.images) { noPhotoMode(); return; }
+    if (lim && lim.images && lim.images.mediaTypes && lim.images.mediaTypes.length){
+      const acc = lim.images.mediaTypes.join(",");
+      $("#file-camera").accept = acc; $("#file-gallery").accept = acc;
+    }
+  }
+}
+
+function parseLoose(t){
+  if (!t) return null;
+  try{ return JSON.parse(t); }catch(e){}
+  const f = t.match(/```(?:json)?\s*([\s\S]*?)```/); if (f){ try{ return JSON.parse(f[1]); }catch(e){} }
+  const i = t.indexOf("{"), j = t.lastIndexOf("}");
+  if (i>=0 && j>i){ try{ return JSON.parse(t.slice(i,j+1)); }catch(e){} }
+  return null;
+}
+const AI_RULES = `Méthode, aliment par aliment :
+1. Nomme l'aliment précisément (ex. « couscous de blé cuit », pas « féculent »).
+2. Estime le poids servi en grammes (ou le volume en ml pour une boisson). Pour une photo, prends comme repères le diamètre de l'assiette (plate ≈ 26 cm, creuse ≈ 22 cm), les couverts (fourchette ≈ 19 cm), le verre, le pain. Pense à l'épaisseur et à la hauteur des aliments, pas seulement à la surface.
+3. Donne les glucides pour 100 g de l'aliment tel qu'il est servi (cuit), puis glucides_g = poids_g × glucides_pour_100g ÷ 100.
+
+Repères de glucides pour 100 g (aliments cuits, tels que servis) :
+riz blanc 28 · pâtes 30 · couscous de blé 23 · frik ou chorba (soupe) 7 · pomme de terre vapeur 17 · frites 35 · purée 14 · lentilles 17 · pois chiches 20 · haricots blancs (loubia) 15 · petits pois 10 · carottes 6 · autres légumes cuits 3 à 6 · khobz / pain blanc 52 · baguette 55 · galette kesra / matlou 50 · msemen 45 · pain complet 45 · dattes 65 · banane 20 · pomme ou poire 12 · orange 9 · raisin 16 · pastèque ou melon 7 · lait 5 · yaourt nature 5 · yaourt sucré 14 · jus de fruit ou soda 10 à 11 (par 100 ml) · sucre 100 · miel 80 · gâteaux orientaux (makrout, baklava) 55 à 65 · viande, poisson, œufs, fromage, huile 0.
+
+Règles :
+- Compte les sauces épaissies, le pain, les boissons sucrées et les desserts visibles.
+- Si une portion est incertaine, garde l'estimation la plus probable (ni maximale ni minimale) et signale l'incertitude dans "remarques".
+
+Réponds uniquement avec ce JSON, sans texte autour :
+{"aliments":[{"nom":"Couscous de blé cuit","portion":"environ 1 grande louche","poids_g":250,"glucides_pour_100g":23,"glucides_g":57.5}],"confiance":"faible|moyenne|élevée","remarques":"une ou deux phrases"}`;
+const LANG_RULE = () => LANG==="ar" ? `\n\nLangue : écris "nom", "portion" et "remarques" en arabe algérien (darja), en écriture arabe, avec des mots simples que comprend un enfant. Garde les chiffres en chiffres occidentaux.` : "";
+const PROMPT_PHOTO = note => `Tu assistes une personne diabétique de type 1 en insulinothérapie fonctionnelle. Analyse la photo de son repas pour estimer les glucides.
+
+- Identifie chaque aliment ou boisson visible et estime la portion servie en grammes (ou ml) d'après la taille de l'assiette, des couverts et les proportions.
+- Si l'image ne montre pas de nourriture, renvoie une liste vide et explique pourquoi dans "remarques".
+${AI_RULES}${note ? `\n\nPrécisions données par la personne (prioritaires sur ce que tu vois) : ${note}` : ""}`;
+const PROMPT_TEXT = desc => `Tu assistes une personne diabétique de type 1 en insulinothérapie fonctionnelle. Estime les glucides du repas qu'elle décrit.
+
+- Décompose le repas en aliments et boissons. Quand une quantité n'est pas précisée, prends une portion adulte habituelle et indique-la dans "portion".
+- Si la description ne correspond pas à un repas, renvoie une liste vide et explique pourquoi dans "remarques".
+${AI_RULES}
+
+Description du repas : ${desc}`;
+
+const AI_ERRORS_FR = {
+  server_missing:"Le service de reconnaissance n'est pas installé sur ce site. En attendant, saisissez les glucides à la main et prévenez votre médecin.",
+  server_config:"Le service de reconnaissance n'est pas encore configuré. En attendant, saisissez les glucides à la main et prévenez votre médecin.",
+  forbidden_origin:"Ouvrez l'application depuis son adresse habituelle.",
+  bad_request:"La demande était incomplète. Réessayez.",
+  no_key:"Ajoutez votre clé gratuite Google AI Studio dans l'onglet Réglages pour activer la reconnaissance des repas.",
+  bad_key:"Le service de reconnaissance est mal configuré. Saisissez les glucides à la main et prévenez votre médecin.",
+  forbidden:"Le service de reconnaissance est mal configuré. Saisissez les glucides à la main et prévenez votre médecin.",
+  quota:"Le service est très demandé en ce moment. Réessayez dans une minute, ou saisissez les glucides à la main.",
+  bad_model:"Le service de reconnaissance est momentanément indisponible. Saisissez les glucides à la main.",
+  region:"L'API Gemini gratuite n'est pas proposée dans votre pays depuis ce réseau.",
+  network:"Pas de connexion Internet, ou la requête a été bloquée. Vérifiez le réseau et réessayez.",
+  cancelled:"Estimation arrêtée.",
+  not_granted:"L'autorisation d'utiliser Claude a été refusée pour cette application. Rechargez la page et acceptez la demande qui s'affiche.",
+  capability_disabled:"L'estimation est désactivée dans cet affichage. Ouvrez l'application dans un navigateur sur claude.ai.",
+  capability_removed:"Votre application Claude est trop ancienne. Mettez-la à jour ou ouvrez l'application dans un navigateur sur claude.ai.",
+  sampling_disabled:"Claude n'est pas disponible pour ce compte ou cette organisation.",
+  not_declared:"L'estimation n'est pas activée pour cette application.",
+  session_expired:"Votre session a expiré. Reconnectez-vous à claude.ai puis réessayez.",
+  image_rejected:"Cette image a été refusée (format ou taille). Reprenez la photo ou choisissez une autre image.",
+  rate_limited:"Limite d'utilisation atteinte pour le moment. Réessayez dans quelques minutes.",
+  refused:"L'estimation a été refusée. Reformulez la description ou reprenez la photo.",
+  empty_completion:"L'estimation n'a rien renvoyé. Relancez-la.",
+  invalid_json:"La réponse était illisible. Relancez l'estimation.",
+  upstream_error:"Problème de connexion avec le service. Relancez l'estimation."
+};
+
+const AI_ERRORS = new Proxy(AI_ERRORS_FR, {get:(o,k)=> o[k]!=null ? t(o[k]) : undefined});
+async function estimate(mode){
+  const btn = mode==="photo" ? $("#btn-analyse") : $("#btn-desc");
+  const label = t(mode==="photo" ? "Estimer les glucides" : "Estimer depuis la description");
+  if (state.analysing){ state.ctl && state.ctl.abort(); return; }
+  let prompt, images;
+  if (mode==="photo"){
+    if (!state.photoBlob) return;
+    prompt = PROMPT_PHOTO($("#photo-note").value.trim()) + LANG_RULE(); images = [state.photoBlob];
+  } else {
+    const d = $("#desc").value.trim();
+    if (d.length < 3){ setStatus(t("Décrivez d'abord votre repas (aliments et quantités si possible)."), true); $("#desc").focus(); return; }
+    prompt = PROMPT_TEXT(d.slice(0,2000)) + LANG_RULE();
+  }
+  setStatus(t("Connexion à l'estimation…"));
+  const fn = await getSample();
+  if (!fn){ setStatus(AI_ERRORS.no_key, true); return; }
+  state.analysing = true; state.ctl = new AbortController();
+  $$("#btn-analyse,#btn-desc").forEach(b=>{ if (b!==btn) b.disabled = true; });
+  btn.textContent = t("Arrêter l'estimation");
+  setStatus(t(mode==="photo" ? "Analyse de l'assiette en cours… (souvent 10 à 40 secondes)" : "Estimation en cours… (souvent 5 à 20 secondes)"));
+  try{
+    const opts = { signal: state.ctl.signal, onText: ({text}) => { if (text) setStatus(t("Estimation en cours… réponse en réception.")); } };
+    if (images) opts.images = images;
+    const out = await callServer({
+      mode: mode==="photo" ? "photo" : "texte",
+      image: images ? await blobToB64(images[0]) : null,
+      mime: images ? (images[0].type || "image/jpeg") : null,
+      text: mode==="photo" ? $("#photo-note").value.trim() : $("#desc").value.trim().slice(0,2000),
+      lang: LANG
+    }, state.ctl.signal);
+    const res = parseLoose(out.text);
+    if (!res) throw {code:"invalid_json", message:"réponse illisible"};
+    const list = Array.isArray(res.aliments) ? res.aliments : [];
+    state.items = list.map(a=>{
+      const w = num(a.poids_g), d = num(a.glucides_pour_100g);
+      const g = (w>0 && d>=0) ? w*d/100 : (num(a.glucides_g)||0);
+      return { id:uid(), nom:String(a.nom||t("Aliment")).slice(0,80), portion:a.portion||"",
+        w: w>0 ? Math.round(w) : null, d: d>=0 && d<=100 ? d : null, g: Math.max(0, Math.round(g*10)/10), ia:true };
+    });
+    state.confidence = ["faible","moyenne","élevée"].includes(res.confiance) ? res.confiance : null;
+    state.remarks = typeof res.remarques==="string" ? res.remarques : "";
+    state.source = mode==="photo" ? "photo" : "description";
+    setStatus(t(list.length ? "Estimation terminée. Vérifiez et corrigez chaque ligne si nécessaire." : "Aucun aliment reconnu."), !list.length);
+    renderItems(); update();
+  }catch(e){
+    const code = (e && e.code) || "inconnu";
+    if (code === "images_unavailable" && !getKey()){
+      noPhotoMode();
+      setStatus(t("La photo ne peut pas être envoyée depuis cet affichage. Décrivez votre repas ci-dessus : l'estimation fonctionnera à partir du texte."), true);
+      $("#desc").focus();
+    } else if (code === "cancelled"){
+      setStatus(AI_ERRORS.cancelled);
+    } else {
+      setStatus(t("{msg} En attendant, saisissez les glucides à la main. (Code : {code})", {msg:(AI_ERRORS[code] || t("L'estimation n'a pas abouti. Relancez-la.")), code: code + (e && e.message ? " — " + String(e.message).slice(0,160) : "")}), true);
+    }
+  }finally{
+    state.analysing = false; state.ctl = null;
+    btn.textContent = label;
+    $$("#btn-analyse,#btn-desc").forEach(b=>b.disabled = false);
+  }
+}
+$("#btn-analyse").addEventListener("click", ()=>estimate("photo"));
+$("#btn-desc").addEventListener("click", ()=>estimate("texte"));
+
+/* ---------- Liste des aliments ---------- */
+function renderItems(){
+  const box = $("#items");
+  if (!state.items.length){ box.innerHTML = ""; }
+  else box.innerHTML = state.items.map(it=>`
+    <div class="item" data-id="${it.id}">
+      <div class="name">
+        <input type="text" class="it-nom" value="${esc(it.nom)}" aria-label="Aliment">
+        ${it.portion?`<div class="meta">${esc(it.portion)}</div>`:""}
+      </div>
+      <div><div class="field-unit"><input type="text" inputmode="decimal" class="it-w num" value="${it.w==null?"":it.w}" aria-label="${esc(t("Poids en grammes de {n}",{n:it.nom}))}" style="padding-inline-end:22px"><span class="u" style="inset-inline-end:8px">g</span></div><div class="meta">${t("poids")}</div></div>
+      <div><div class="field-unit"><input type="text" inputmode="decimal" class="it-g num" value="${it.g==null?"":String(it.g).replace(".",",")}" aria-label="${esc(t("Glucides en grammes pour {n}",{n:it.nom}))}" style="padding-inline-end:22px"><span class="u" style="inset-inline-end:8px">g</span></div><div class="meta">${t("glucides")}${it.d!=null?" ("+fmt(it.d,0)+" %)":""}</div></div>
+      <button type="button" class="del" aria-label="${esc(t("Retirer {n}",{n:it.nom}))}">×</button>
+    </div>`).join("");
+  let rem = "";
+  if (state.source!=="manuel" && (state.confidence || state.remarks)){
+    rem = `<div class="note ${state.confidence==="faible"?"warn":"info"}"><strong>${t(state.source==="photo"?"Estimation par photo":"Estimation depuis la description")}${state.confidence?`<span class="conf ${state.confidence==="faible"?"faible":""}">${t("confiance {c}",{c:t(state.confidence)})}</span>`:""}</strong>${esc(state.remarks)}</div>`;
+  }
+  $("#ai-remarks").innerHTML = rem;
+  updateTotal();
+}
+$("#items").addEventListener("input", e=>{
+  const row = e.target.closest(".item"); if (!row) return;
+  const it = state.items.find(x=>x.id===row.dataset.id); if (!it) return;
+  if (e.target.classList.contains("it-nom")) it.nom = e.target.value;
+  if (e.target.classList.contains("it-g")) { it.g = num(e.target.value); it.edited = true; }
+  if (e.target.classList.contains("it-w")) {
+    it.w = num(e.target.value); it.edited = true;
+    if (it.d!=null && it.w>=0){ it.g = Math.round(it.w*it.d/10)/10; const gi = row.querySelector(".it-g"); if (gi) gi.value = String(it.g).replace(".",","); }
+  }
+  update();
+});
+$("#items").addEventListener("click", e=>{
+  if (!e.target.classList.contains("del")) return;
+  const row = e.target.closest(".item");
+  state.items = state.items.filter(x=>x.id!==row.dataset.id);
+  renderItems(); update();
+});
+$("#btn-add-item").addEventListener("click", ()=>{
+  state.items.push({id:uid(), nom:"", g:null});
+  renderItems(); update();
+  const inputs = $$("#items .it-nom"); inputs[inputs.length-1].focus();
+});
+const carbTotal = () => Math.round(state.items.reduce((s,it)=>s+(it.g>0?it.g:0),0)*10)/10;
+function updateTotal(){ $("#carb-total").textContent = fmt(carbTotal(),1); }
+
+/* ---------- Calcul ---------- */
+function roundStep(v, step){ return Math.round(Math.floor(v/step + 1e-9)*step*100)/100; } // arrondi prudent, au pas inférieur
+function compute(){
+  const g = readGly(), carbs = carbTotal(), meal = state.meal;
+  const out = {g, carbs, missing:[]};
+  if (!settingsReady(meal)) out.missing.push("setup");
+  if (g.mg==null) out.missing.push("gly");
+  if (out.missing.length) return out;
+  if (g.mg < settings.hypo){ out.hypo = true; return out; }
+  const ratio = settings.ratios[meal];               // U pour 10 g
+  const mealDose = carbs/10*ratio;
+  let corr = (g.mg - settings.cible)/settings.fsi;
+  if (corr < 0 && !settings.reduire) corr = 0;
+  const corrNet = corr;
+  const raw = Math.max(0, mealDose + corr);
+  let dose = Math.max(0, roundStep(raw, settings.arrondi||0.5));
+  const capped = settings.max>0 && dose > settings.max;
+  Object.assign(out, {ratio, mealDose, corr, corrNet, raw, dose, capped, final: capped ? settings.max : dose});
+  out.hyper = g.mg >= settings.hyper;
+  return out;
+}
+
+let lastCalcKey = "";
+function update(){
+  updateTotal();
+  // unité affichée
+  $("#gly-unit").textContent = U().lbl;
+  const g = readGly();
+  const gh = $("#gly-hint");
+  gh.textContent = g.warn || (settings.cible ? t("Objectif : {v}",{v:fmtG(settings.cible)}) : "");
+  gh.style.color = g.warn ? "var(--danger)" : "";
+  $("#setup-needed").hidden = settingsReady(state.meal);
+  renderResult(compute());
+}
+
+function renderResult(r){
+  const b = $("#result-body");
+  if (r.missing.includes("setup")){
+    const m = MEALS.find(x=>x.id===state.meal).nom.toLowerCase();
+    b.innerHTML = `<p class="pending">${esc(t("Le calcul s'affichera quand vos réglages seront complets (ratio du {m} compris).",{m}))}</p>`; return;
+  }
+  if (r.missing.includes("gly")){
+    b.innerHTML = `<p class="pending">${t("Saisissez votre glycémie pour obtenir la dose.")}</p>`; return;
+  }
+  if (r.hypo){
+    b.innerHTML = `
+      <div class="dose"><span class="v num">0</span><span class="u">${t("UI")}</span></div>
+      <div class="note danger"><strong>${t("Hypoglycémie : pas de bolus maintenant")}</strong>
+      ${esc(t("Glycémie à {g}, sous votre seuil de {s}. Resucrez-vous selon le protocole de votre équipe (souvent 15 g de sucre rapide), recontrôlez 15 minutes plus tard, puis refaites le calcul avant de manger.",{g:fmtG(r.g.mg), s:fmtG(settings.hypo)}))}</div>`;
+    return;
+  }
+  const total = Math.max(r.mealDose + Math.max(0,r.corrNet), 0.0001);
+  const pMeal = r.raw>0 ? Math.min(100, r.mealDose/total*100) : 0;
+  const pCorr = r.raw>0 && r.corrNet>0 ? r.corrNet/total*100 : 0;
+  const warn = [];
+  if (r.capped) warn.push(`<div class="note danger"><strong>${t("Dose plafonnée à {m} UI",{m:fmt(settings.max,1)})}</strong>${t("Le calcul donne {d} UI, au-dessus de votre dose maximale. Vérifiez les glucides et la glycémie ; en cas de doute, contactez votre équipe soignante.",{d:fmt(r.dose,1)})}</div>`);
+  if (r.hyper) warn.push(`<div class="note warn"><strong>${t("Glycémie élevée")}</strong>${t("Recherchez les cétones (sang ou urines) selon les consignes de votre équipe.")}</div>`);
+  if (r.carbs > 200) warn.push(`<div class="note warn"><strong>${t("Quantité de glucides inhabituelle")}</strong>${t("{c} g : vérifiez les portions avant d'injecter.",{c:fmt(r.carbs,0)})}</div>`);
+  if (state.items.some(it=>it.g==null && it.nom)) warn.push(`<div class="note warn">${t("Certains aliments n'ont pas de valeur en glucides : ils ne sont pas comptés.")}</div>`);
+  if (r.g.warn) warn.push(`<div class="note danger">${esc(r.g.warn)}</div>`);
+
+  const ratioTxt = t("1 UI pour {g} g",{g:fmt(10/r.ratio,1)});
+  const key = [r.final, r.carbs, r.g.mg, state.meal].join("|");
+  const keep = key===lastCalcKey;
+  const prevDone = keep ? $("#dose-done")?.value : null;
+  const prevChk = keep ? $("#chk-verif")?.checked : false;
+  lastCalcKey = key;
+
+  b.innerHTML = `
+    <div class="dose"><span class="v num">${fmt(r.final,1)}</span><span class="u">${t("UI")}</span></div>
+    <div class="muted">${t("d'insuline rapide, calculée avant arrondi à {r} UI",{r:fmt(r.raw,2)})}</div>
+    <div class="gauge" aria-hidden="true"><i class="g-meal" style="width:${pMeal}%"></i><i class="g-corr" style="width:${pCorr}%"></i></div>
+    <table class="breakdown num">
+      <tr><td><span class="sw" style="background:var(--meal)"></span>${esc(t("Repas : {c} g × {r}",{c:fmt(r.carbs,1), r:ratioTxt}))}</td><td>${fmt(r.mealDose,2)} ${t("UI")}</td></tr>
+      <tr><td><span class="sw" style="background:var(--corr)"></span>${t("Correction")} : <span dir="ltr" style="display:inline-block">(${esc(fmtG(r.g.mg))} − ${esc(fmtG(settings.cible))}) ÷ ${esc(fmt(fromMg(settings.fsi), U().dec))} g/L/UI</span></td><td>${r.corr>=0?"+":"−"} ${fmt(Math.abs(r.corr),2)} ${t("UI")}</td></tr>
+    </table>
+    ${warn.join("")}
+    <div class="confirm">
+      <label class="check"><input type="checkbox" id="chk-verif" ${prevChk?"checked":""}><span>${t("J'ai vérifié les glucides et ma glycémie.")}</span></label>
+      <label for="dose-done" style="margin-top:14px">${t("Dose réellement injectée")}</label>
+      <div class="field-unit" style="max-width:200px"><input id="dose-done" type="text" inputmode="decimal" class="num" value="${prevDone ?? String(r.final).replace(".",",")}"><span class="u">${t("UI")}</span></div>
+      <button class="primary" id="btn-save" type="button" ${prevChk?"":"disabled"}>${t("Enregistrer dans le journal")}</button>
+      <div class="status" id="save-status" role="status" style="color:inherit"></div>
+    </div>`;
+  $("#chk-verif").addEventListener("change", e=>{ $("#btn-save").disabled = !e.target.checked; });
+  $("#btn-save").addEventListener("click", ()=>saveEntry(r));
+}
+function fmtFsi(mg){ return fmt(fromMg(mg), U().dec) + " " + U().lbl + t("/UI"); }
+
+async function saveEntry(r){
+  const done = num($("#dose-done").value);
+  if (done==null || done<0 || done>100){ $("#save-status").textContent = t("Indiquez la dose injectée (en unités)."); return; }
+  const e = {
+    id:uid(), ts:Date.now(), repas:state.meal, glyMg:Math.round(r.g.mg), glucides:r.carbs,
+    aliments: state.items.filter(it=>it.nom||it.g).map(it=>({nom:it.nom, poids:it.w, g:it.g, modifie:!!it.edited})),
+    source:state.source, doseCalculee:r.final, doseFaite:done,
+    detail:{repas:+r.mealDose.toFixed(2), correction:+r.corr.toFixed(2), ratio:r.ratio, fsi:settings.fsi, cible:settings.cible}
+  };
+  journal.unshift(e);
+  if (journal.length > MAX_JOURNAL) journal.length = MAX_JOURNAL;
+  const ok = await Store.save("journal", {entries:journal});
+  // remise à zéro du repas
+  state.items = []; state.photoBlob = null; state.confidence=null; state.remarks=""; state.source="manuel";
+  $("#photo-wrap").style.display="none"; $("#photo-note").value=""; $("#desc").value=""; $("#gly").value="";
+  setStatus(""); lastCalcKey=""; renderItems(); update();
+  $("#result-body").insertAdjacentHTML("afterbegin", `<div class="bravo">${MASCOT_SVG}<span>${t(ok?"Bravo ! Ton bolus est noté dans le journal ⭐":"Bolus gardé sur cet appareil uniquement.")}</span></div>`);
+}
+
+/* ---------- Journal ---------- */
+function renderJournal(){
+  const list = $("#journal-list");
+  $("#btn-export").hidden = !journal.length;
+  if (!journal.length){ list.innerHTML = `<p class="empty"><span class="big" aria-hidden="true">📒</span>${t("Pas encore de bolus enregistré. Le premier apparaîtra ici après un calcul.")}</p>`; return; }
+  list.innerHTML = journal.map(e=>{
+    const d = new Date(e.ts);
+    const mm = MEALS.find(m=>m.id===e.repas) || {}; const meal = mm.nom || e.repas;
+    const foods = (e.aliments||[]).map(a=>`${a.nom||"?"} ${a.g!=null?fmt(a.g,0)+(LANG==="ar"?" غ":" g"):""}`).join(LANG==="ar"?"، ":", ");
+    const diff = e.doseFaite!==e.doseCalculee ? t(" (calculée {d})",{d:fmt(e.doseCalculee,1)}) : "";
+    return `<div class="entry">
+      <span class="ic" aria-hidden="true">${mm.ic||"🍴"}</span>
+      <div><strong>${esc(meal)}</strong>
+        <div class="when">${d.toLocaleDateString(locale(),{weekday:"short",day:"numeric",month:"short"})}${LANG==="ar"?"، ":", "}${d.toLocaleTimeString(locale(),{hour:"2-digit",minute:"2-digit"})}</div>
+        <div class="num">${esc(t("{g}, {c} g de glucides",{g:fmtG(e.glyMg), c:fmt(e.glucides,0)}))}${t(e.source==="photo"?", photo":e.source==="description"?", description":"")}</div>
+      </div>
+      <div class="d num">${fmt(e.doseFaite,1)} ${t("UI")}<small>${esc(diff)}</small><button class="ghost" data-del="${e.id}" style="font-size:.85rem">${t("Supprimer")}</button></div>
+      ${foods?`<div class="foods">${esc(foods)}</div>`:""}
+    </div>`;
+  }).join("");
+}
+$("#journal-list").addEventListener("click", async e=>{
+  const id = e.target.dataset && e.target.dataset.del; if (!id) return;
+  if (!confirm(t("Supprimer ce bolus du journal ?"))) return;
+  journal = journal.filter(x=>x.id!==id);
+  await Store.save("journal",{entries:journal});
+  renderJournal();
+});
+
+let downloadsApi = null;
+$("#btn-export").addEventListener("click", async ()=>{
+  const head = ["date","heure","repas","glycemie_mg_dL","glucides_g","source","dose_calculee_U","dose_injectee_U","part_repas_U","correction_U","ratio_U_10g","isf_mg_dL_U","objectif_mg_dL","aliments"];
+  const rows = journal.map(e=>{ const d=new Date(e.ts); return [
+    d.toLocaleDateString("fr-FR"), d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}),
+    (MEALS.find(m=>m.id===e.repas)||{}).fr||e.repas, e.glyMg, e.glucides, e.source, e.doseCalculee, e.doseFaite,
+    e.detail?.repas, e.detail?.correction, e.detail?.ratio, e.detail?.fsi, e.detail?.cible,
+    (e.aliments||[]).map(a=>`${a.nom} ${a.g??""}g`).join(" | ")
+  ];});
+  const csv = [head, ...rows].map(r=>r.map(v=>{ const s=String(v??""); return /[;"\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }).join(";")).join("\n");
+  const data = "\ufeff"+csv;
+  if (downloadsApi){ try{ await downloadsApi.save({filename:"journal-bolus.csv", data}); return; }catch(err){} }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data],{type:"text/csv;charset=utf-8"}));
+  a.download = "journal-bolus.csv"; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+});
+
+/* ---------- Réglages ---------- */
+let draft = null;           // brouillon du formulaire, n'affecte pas les calculs avant enregistrement
+const UF = () => UNITS[draft.unit] || UNITS.gl;
+function unitLabels(){
+  $$("[data-unit]").forEach(s=>s.textContent = UF().lbl);
+  $$("[data-unit-per-u]").forEach(s=>s.textContent = UF().lbl+t("/UI"));
+}
+function fillSettingsForm(src){
+  draft = clone(src || settings); draft.unit = "gl"; draft.rfmt = "gpu";
+  const f = $("#settings-form");
+  f.querySelector(`input[name=unit][value="${draft.unit}"]`).checked = true;
+  f.querySelector(`input[name=rfmt][value="${draft.rfmt}"]`).checked = true;
+  const show = mg => mg==null ? "" : String(+(mg/UF().f).toFixed(UF().dec)).replace(".",",");
+  $("#s-cible").value = show(draft.cible);
+  $("#s-fsi").value = show(draft.fsi);
+  $("#s-hypo").value = show(draft.hypo);
+  $("#s-hyper").value = show(draft.hyper);
+  $("#s-reduire").checked = !!draft.reduire;
+  $("#s-arrondi").value = String(draft.arrondi);
+  $("#s-max").value = draft.max==null ? "" : String(draft.max).replace(".",",");
+  $("#s-cible").placeholder = draft.unit==="gl" ? t("ex.")+" 1,10" : draft.unit==="mmol" ? "ex. 6,1" : "ex. 110";
+  $("#s-fsi").placeholder = draft.unit==="gl" ? t("ex.")+" 0,40" : draft.unit==="mmol" ? "ex. 2,2" : "ex. 40";
+  renderRatioRows();
+  unitLabels();
+  $("#settings-err").hidden = true; $("#settings-saved").hidden = true;
+
+}
+function renderRatioRows(){
+  const k = draft.rfmt;
+  $("#ratio-rows").innerHTML = MEALS.map(m=>{
+    const u10 = draft.ratios[m.id];
+    const val = u10>0 ? (k==="gpu" ? +(10/u10).toFixed(1) : +u10.toFixed(2)) : "";
+    return `<div class="ratio-row"><label for="r-${m.id}">${m.nom}</label>
+      <div class="field-unit"><input id="r-${m.id}" data-meal="${m.id}" type="text" inputmode="decimal" value="${String(val).replace(".",",")}" placeholder="${t("ex.")} 10"><span class="u">${LANG==="ar"?"غ / 1 وحدة":"g / 1 UI"}</span></div></div>`;
+  }).join("");
+}
+// Lit le formulaire dans l'unité et le format du brouillon, valeurs internes en mg/dL et U pour 10 g
+function readForm(){
+  const f = UF().f;
+  const mg = id => { const v = num($(id).value); return v==null ? null : v*f; };
+  const ratios = {};
+  $$("#ratio-rows input").forEach(i=>{ const v=num(i.value); if (v>0) ratios[i.dataset.meal] = draft.rfmt==="gpu" ? 10/v : v; });
+  return Object.assign({}, draft, {
+    cible:mg("#s-cible"), fsi:mg("#s-fsi"), hypo:mg("#s-hypo"), hyper:mg("#s-hyper"),
+    reduire:$("#s-reduire").checked, ratios,
+    arrondi:num($("#s-arrondi").value)||0.5, max:num($("#s-max").value)
+  });
+}
+// Changer d'unité ou de format convertit les valeurs affichées sans perte
+$$("#settings-form input[name=unit]").forEach(r=>r.addEventListener("change",()=>{
+  const d = readForm(); d.unit = r.value; fillSettingsForm(d);
+}));
+$$("#settings-form input[name=rfmt]").forEach(r=>r.addEventListener("change",()=>{
+  const d = readForm(); d.rfmt = r.value; fillSettingsForm(d);
+}));
+const fmtD = mg => fmt(+(mg/UF().f).toFixed(UF().dec), UF().dec)+" "+UF().lbl;
+$("#btn-diag").addEventListener("click", async ()=>{
+  const st = $("#diag-status");
+  st.style.color = ""; st.textContent = t("Envoi d'une image de test…");
+  const c = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d");
+  x.fillStyle = "#fff"; x.fillRect(0,0,128,128); x.fillStyle = "#f28c28"; x.beginPath(); x.arc(64,64,44,0,7); x.fill();
+  const blob = await new Promise(r=>c.toBlob(r,"image/jpeg",0.9));
+  try{ const r = await callServer({mode:"test", image: await blobToB64(blob), mime:"image/jpeg"}); st.style.color = "var(--ok)"; st.textContent = t("Reconnaissance d'image opérationnelle ({m}) : « {t} »",{m:r.model, t:r.text.trim().slice(0,80)}); }
+  catch(err){ st.style.color = "var(--danger)"; st.textContent = t("Échec : {e} Détail technique : {d}",{e:(AI_ERRORS[err.code]||err.code), d:(err.message||"—")}); }
+});
+$("#settings-form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  photoMode();
+  const d = readForm();
+  const errs = [];
+  if (!(d.cible>=70 && d.cible<=200)) errs.push(t("L'objectif glycémique doit se situer entre {a} et {b}.",{a:fmtD(70),b:fmtD(200)}));
+  if (!(d.fsi>=5 && d.fsi<=300)) errs.push(t("L'index de sensibilité semble hors limites (entre {a} et {b} par unité).",{a:fmtD(5),b:fmtD(300)}));
+  if (!(d.hypo>=50 && d.hypo<=90)) errs.push(t("Le seuil d'hypoglycémie doit se situer entre {a} et {b}.",{a:fmtD(50),b:fmtD(90)}));
+  if (!(d.hyper>=180 && d.hyper<=400)) errs.push(t("Le seuil d'alerte cétones doit se situer entre {a} et {b}.",{a:fmtD(180),b:fmtD(400)}));
+  if (d.cible && d.hypo && d.cible <= d.hypo) errs.push(t("L'objectif doit être supérieur au seuil d'hypoglycémie."));
+  Object.entries(d.ratios).forEach(([k,v])=>{ if (v>5 || v<0.1) errs.push(t("Ratio du repas « {m} » inhabituel : vérifiez la valeur et le format choisi.",{m:MEALS.find(m=>m.id===k).nom})); });
+  if (d.max!=null && !(d.max>0 && d.max<=60)) errs.push(t("La dose maximale doit être comprise entre 0 et 60 UI."));
+  const box = $("#settings-err");
+  if (errs.length){ box.innerHTML = "<strong>"+t("À corriger")+"</strong>"+errs.map(esc).join("<br>"); box.hidden=false; $("#settings-saved").hidden=true; return; }
+  box.hidden = true;
+  settings = Object.assign(clone(DEFAULTS), d); delete settings.iob; delete settings.duree;
+  draft = clone(settings);
+  const ok = await Store.save("settings", settings);
+  const s = $("#settings-saved"); s.textContent = t(ok ? "Réglages enregistrés" : "Réglages gardés sur cet appareil uniquement"); s.hidden=false;
+  update();
+});
+
+function normalize(){ settings.unit = "gl"; settings.rfmt = "gpu"; }
+normalize();
+function setLang(l){
+  const formDraft = (!$("#tab-reglages").hidden && draft) ? readForm() : null;
+  LANG = l==="ar" ? "ar" : "fr";
+  try{ localStorage.setItem("ift:lang", LANG); }catch(e){}
+  applyStatic();
+  $("#desc-label").textContent = t(state.noPhoto ? "Décrivez votre repas" : "Ou décrivez votre repas");
+  if (!state.analysing){ $("#btn-analyse").textContent = t("Estimer les glucides"); $("#btn-desc").textContent = t("Estimer depuis la description"); }
+  document.querySelectorAll(".status").forEach(el=>{ el.textContent = ""; el.style.color = ""; });
+  $("#settings-err").hidden = true; $("#settings-saved").hidden = true;
+  lastCalcKey = "";
+  renderMealChips(); renderItems(); update();
+  if (!$("#tab-journal").hidden) renderJournal();
+  if (formDraft) fillSettingsForm(formDraft);
+}
+document.querySelectorAll("#lang-switch button").forEach(b=>b.addEventListener("click", ()=>setLang(b.dataset.lang)));
+
+/* ---------- Démarrage ---------- */
+setLang(LANG);
+photoMode();
+try{ if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+if (!settingsReady(state.meal) && !settings.cible) showTab("reglages");
+initAI();
+(async ()=>{
+  try{ if (window.claude && claude.use) downloadsApi = await claude.use("downloads"); }catch(e){}
+  if (await Store.init()){
+    const [s, j] = await Promise.all([Store.load("settings"), Store.load("journal")]);
+    if (s) { settings = Object.assign(clone(DEFAULTS), s); normalize(); }
+    else if (lsGet("settings")) Store.save("settings", settings);
+    if (j && Array.isArray(j.entries)) journal = j.entries;
+    else if (journal.length) Store.save("journal", {entries:journal});
+    update();
+    if (!$("#tab-reglages").hidden) fillSettingsForm(settings);
+    if (!$("#tab-journal").hidden) renderJournal();
+    if (settings.cible && !$("#tab-reglages").hidden && settingsReady(state.meal)) showTab("repas");
+  }
+})();
+})();
+</script>
+</body>
+</html>

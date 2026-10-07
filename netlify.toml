@@ -1,0 +1,7 @@
+# Configuration Netlify de l'application Bolus (version patients)
+[build]
+  publish = "."
+  command = ""
+
+[functions]
+  directory = "netlify/functions"
