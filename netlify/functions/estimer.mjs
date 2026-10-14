@@ -2,7 +2,7 @@
 // La clé se règle dans Netlify : Project configuration > Environment variables > GEMINI_API_KEY.
 // Seuls la photo (ou la description) du repas et la langue arrivent ici : jamais la glycémie ni les doses.
 
-const MODELS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-2.0-flash"];
+const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-flash-latest"];
 const MAX_IMAGE_B64 = 5000000; // ~3,7 Mo d'image, largement assez pour une photo réduite à 1280 px
 
 const AI_RULES = `Méthode, aliment par aliment :
@@ -88,7 +88,7 @@ async function handle(req){
   let last = {code:"upstream_error", message:"aucun modèle disponible"};
   for (const m of MODELS){
     try{ const r = await gemini(m, key, parts); return {ok:true, text:r.text, model:r.model}; }
-    catch(e){ last = e; if (!["bad_model","quota","empty_completion","upstream_error"].includes(e.code)) break; }
+  catch(e){ last = e; if (!["bad_model","quota","forbidden","empty_completion","upstream_error"].includes(e.code)) break; }
   }
   return {ok:false, code:last.code, message:last.message};
 }
