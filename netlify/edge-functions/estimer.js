@@ -1,11 +1,12 @@
 // Fonction Edge Netlify : garde la clé Gemini secrète et estime les glucides d'un repas.
-// Les fonctions Edge peuvent attendre Gemini jusqu'à 40 s (les fonctions classiques gratuites sont coupées vers 10 s).
+// La réponse est envoyée en flux : Netlify reçoit tout de suite un début de réponse et ne coupe plus la fonction.
 // La clé se règle dans Netlify : Project configuration > Environment variables > GEMINI_API_KEY.
 // Seuls la photo (ou la description) du repas et la langue arrivent ici : jamais la glycémie ni les doses.
 
 const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-flash-latest"];
 const MAX_IMAGE_B64 = 5000000;
-const DEADLINE_MS = 36000;   // répondre avant la limite de 40 s des fonctions Edge
+const DEADLINE_MS = 100000;  // temps total laissé à Gemini (la réponse à Netlify part tout de suite, voir en bas)
+const PER_MODEL_MS = 40000;
 
 const AI_RULES = `Méthode, aliment par aliment :
 1. Nomme l'aliment précisément (ex. « couscous de blé cuit », pas « féculent »).
@@ -98,20 +99,36 @@ async function handle(req){
   else return {ok:false, code:"bad_request", message:"mode inconnu"};
   parts.push({text:prompt});
   let last = {code:"upstream_error", message:"aucun modèle disponible"};
+  const trail = [];   // journal des essais, renvoyé dans le détail technique en cas d'échec
   for (const m of MODELS){
     const left = DEADLINE_MS - (Date.now() - start);
-    if (left < 3000) break;
-    try{ const r = await gemini(m, key, parts, Math.min(left, 22000), true); return {ok:true, text:r.text, model:r.model}; }
-    catch(e){ last = e; if (!["bad_model","quota","forbidden","empty_completion","upstream_error","timeout"].includes(e.code)) break; }
+    if (left < 5000) break;
+    const t0 = Date.now();
+    try{ const r = await gemini(m, key, parts, Math.min(left, PER_MODEL_MS), true); return {ok:true, text:r.text, model:r.model + " en " + Math.round((Date.now()-t0)/1000) + " s"}; }
+    catch(e){
+      last = e; trail.push(m + " → " + e.code + " après " + Math.round((Date.now()-t0)/1000) + " s" + (e.code==="timeout" ? "" : " (" + String(e.message||"").slice(0,140) + ")"));
+      if (!["bad_model","quota","forbidden","empty_completion","upstream_error","timeout"].includes(e.code)) break;
+    }
   }
-  if (last.code === "timeout") last = {code:"upstream_error", message:last.message};
-  return {ok:false, code:last.code, message:last.message};
+  const code = last.code === "timeout" ? "upstream_error" : last.code;
+  return {ok:false, code, message: trail.join(" | ") || last.message};
 }
 
+// Réponse en flux : un espace part immédiatement (Netlify exige un début de réponse en moins de 40 s),
+// puis un espace toutes les 5 s pour garder la connexion, et enfin le résultat. L'application ignore les espaces.
 export default async (req) => {
-  let out;
-  try{ out = await handle(req); }catch(e){ out = {ok:false, code:"upstream_error", message:String(e && e.message || e)}; }
-  return new Response(JSON.stringify(out), {headers:{"content-type":"application/json; charset=utf-8", "cache-control":"no-store"}});
+  const enc = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller){
+      controller.enqueue(enc.encode(" "));
+      const keep = setInterval(()=>{ try{ controller.enqueue(enc.encode(" ")); }catch(e){} }, 5000);
+      let out;
+      try{ out = await handle(req); }catch(e){ out = {ok:false, code:"upstream_error", message:String(e && e.message || e)}; }
+      clearInterval(keep);
+      try{ controller.enqueue(enc.encode(JSON.stringify(out))); controller.close(); }catch(e){}
+    }
+  });
+  return new Response(stream, {headers:{"content-type":"application/json; charset=utf-8", "cache-control":"no-store"}});
 };
 
 export const config = { path: "/api/estimer" };
